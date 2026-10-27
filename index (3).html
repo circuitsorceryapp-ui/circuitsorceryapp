@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0b1220">
+<title>Circuit Sorcery — Electronics Build Guides &amp; Robot Car Project</title>
+<meta name="description" content="Free step-by-step guides for real electronics builds: a self-learning, voice-controlled robot car with ESP32-S3, sonars, camera and AI. Parts list, wiring diagrams, code and every gotcha explained.">
+<meta name="keywords" content="electronics projects, robot car, ESP32, ESP32-S3, DIY robot, voice controlled robot, self learning robot, Arduino, hobby electronics, build guide, HC-SR04, L298N">
+<meta name="author" content="Circuit Sorcery">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://circuitsorceryapp.com/">
+
+<!-- Open Graph (Facebook, WhatsApp, Discord previews) -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Circuit Sorcery">
+<meta property="og:title" content="Circuit Sorcery — Build Guides">
+<meta property="og:description" content="Real electronics, no magic secrets. Free step-by-step guides: build your own self-learning, voice-controlled robot car.">
+<meta property="og:url" content="https://circuitsorceryapp.com/">
+<meta property="og:image" content="https://circuitsorceryapp.com/icon.svg">
+
+<!-- Twitter/X preview -->
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Circuit Sorcery — Build Guides">
+<meta name="twitter:description" content="Real electronics, no magic secrets. Free step-by-step guides for real electronics builds.">
+<meta name="twitter:image" content="https://circuitsorceryapp.com/icon.svg">
+
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%230b1220'/%3E%3Cpath d='M62 20 A34 34 0 1 0 62 80' fill='none' stroke='%2322d3ee' stroke-width='11' stroke-linecap='round'/%3E%3Cpath d='M50 30 L62 45 L50 60 L62 75' fill='none' stroke='%2322d3ee' stroke-width='8' stroke-linejoin='round' stroke-linecap='round'/%3E%3Ccircle cx='66' cy='20' r='6' fill='%23fbbf24'/%3E%3C/svg%3E">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Circuit Sorcery",
+  "url": "https://circuitsorceryapp.com/",
+  "description": "Free step-by-step guides for real electronics builds by the Circuit Sorcery YouTube channel.",
+  "creator": { "@type": "Person", "name": "Circuit Sorcery" }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  "name": "How to Build a Self-Learning Voice-Controlled Robot Car",
+  "description": "Step-by-step guide: build a robot car with an ESP32-S3 brain, 3 sonars, IMU compass, camera, microphone and speaker that learns from its crashes.",
+  "totalTime": "P2D",
+  "supply": [
+    {"@type":"HowToSupply","name":"ESP32-S3 DevKitC-1"},
+    {"@type":"HowToSupply","name":"L298N motor driver"},
+    {"@type":"HowToSupply","name":"TT gear motors with wheels"},
+    {"@type":"HowToSupply","name":"HC-SR04 sonars"},
+    {"@type":"HowToSupply","name":"MPU-6050 IMU"},
+    {"@type":"HowToSupply","name":"INMP441 microphone"},
+    {"@type":"HowToSupply","name":"DFPlayer Mini with speaker"},
+    {"@type":"HowToSupply","name":"SSD1306 OLED display"},
+    {"@type":"HowToSupply","name":"MG996R servo"}
+  ],
+  "step": [
+    {"@type":"HowToStep","name":"Test the brain","text":"Flash a blink sketch to the ESP32-S3 to confirm the board and Arduino IDE work."},
+    {"@type":"HowToStep","name":"Wire the motor driver and motors","text":"Connect the L298N driver to two TT motors and the 7.2V battery pack."},
+    {"@type":"HowToStep","name":"Mount chassis and steering servo","text":"Mount motors, servo and caster wheel on the chassis board."},
+    {"@type":"HowToStep","name":"Add the sonar sensors","text":"Wire three HC-SR04 sonars front, left and right with voltage dividers on Echo pins."},
+    {"@type":"HowToStep","name":"Add the IMU compass","text":"Wire the MPU-6050 to the I2C bus and calibrate it while still."},
+    {"@type":"HowToStep","name":"Give it a voice","text":"Connect the DFPlayer Mini with a microSD of phrases and a small speaker."},
+    {"@type":"HowToStep","name":"Add the microphone","text":"Wire the INMP441 I2S microphone."},
+    {"@type":"HowToStep","name":"Add the OLED face","text":"Connect the SSD1306 OLED to the shared I2C bus."},
+    {"@type":"HowToStep","name":"Add the camera","text":"Wire the ESP32-CAM over serial with 1k resistors and 5V power."},
+    {"@type":"HowToStep","name":"Flash the main firmware","text":"Upload the robot car sketch with explore, map and Q-table commands."},
+    {"@type":"HowToStep","name":"Final power-up test","text":"Verify common grounds, mount the capacitor, and test with wheels off the ground."}
+  ]
+}
+</script>
+
+<style>
+:root{
+  --bg:#070d1a; --card:rgba(17,26,46,.72); --card-solid:#111a2e; --line:rgba(56,84,129,.35);
+  --text:#e6edf7; --muted:#8ea0bd; --accent:#22d3ee; --accent2:#8b5cf6;
+  --warn:#fbbf24; --ok:#34d399;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;color:var(--text);
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  min-height:100%; background:var(--bg);}
+body{
+  padding-bottom:env(safe-area-inset-bottom);
+  background:
+    radial-gradient(900px 500px at 85% -5%, rgba(139,92,246,.14), transparent 60%),
+    radial-gradient(800px 500px at 10% 105%, rgba(34,211,238,.10), transparent 60%),
+    #070d1a;
+  background-attachment:fixed;}
+a{color:var(--accent);text-decoration:none}
+
+/* ── Schematic side traces (desktop only) ── */
+.trace{position:fixed;top:0;bottom:0;width:170px;z-index:0;opacity:.5;pointer-events:none}
+.trace.left{left:0} .trace.right{right:0}
+.trace svg{width:100%;height:100%}
+.trace .draw{stroke-dasharray:600;stroke-dashoffset:600;animation:draw 2.2s ease forwards}
+.trace .draw.d2{animation-delay:.5s} .trace .draw.d3{animation-delay:1s}
+.trace .pulse{animation:glow 3.5s ease-in-out infinite}
+@keyframes draw{to{stroke-dashoffset:0}}
+@keyframes glow{0%,100%{opacity:.35}50%{opacity:1}}
+@media(max-width:1180px){.trace{display:none}}
+
+/* ── Layout ── */
+.wrap{position:relative;z-index:1}
+header{padding:44px 20px 30px;text-align:center;position:relative;
+  background:radial-gradient(1000px 420px at 50% -12%, rgba(34,211,238,.16), transparent 70%);
+  border-bottom:1px solid var(--line);}
+.logo-badge{width:104px;height:104px;margin:0 auto 16px;display:block;
+  filter:drop-shadow(0 0 22px rgba(34,211,238,.45));animation:float 6s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+h1{font-size:clamp(1.6rem,4vw,2.3rem);margin:0;letter-spacing:.14em;text-transform:uppercase;font-weight:800;
+  background:linear-gradient(92deg,#e6edf7 30%,#7ce7f7 60%,#a78bfa 90%);
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.tagline{color:var(--muted);font-size:1rem;margin-top:10px}
+main{max-width:780px;margin:0 auto;padding:24px 16px 60px}
+
+/* ── Glass cards ── */
+.guide{background:var(--card);border:1px solid var(--line);border-radius:20px;
+  padding:24px;margin-bottom:18px;cursor:pointer;position:relative;overflow:hidden;
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  transition:transform .18s, box-shadow .18s, border-color .18s}
+.guide::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(420px 180px at var(--mx,50%) var(--my,0%), rgba(34,211,238,.12), transparent 70%);
+  opacity:0;transition:opacity .25s}
+.guide:hover{transform:translateY(-3px);border-color:rgba(34,211,238,.55);
+  box-shadow:0 14px 40px rgba(0,0,0,.45),0 0 0 1px rgba(34,211,238,.12)}
+.guide:hover::before{opacity:1}
+.guide:active{transform:scale(.985)}
+.guide h2{margin:0 0 8px;font-size:1.25rem}
+.guide p{margin:0;color:var(--muted);font-size:.95rem;line-height:1.55}
+.guide .meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.badge{font-size:.74rem;padding:4px 11px;border-radius:99px;border:1px solid var(--line);
+  color:var(--muted);background:rgba(14,22,38,.8)}
+.badge.accent{color:var(--accent);border-color:rgba(34,211,238,.45);
+  background:rgba(34,211,238,.08)}
+
+.back{display:inline-flex;align-items:center;gap:6px;margin:6px 0 16px;color:var(--muted);
+  font-size:.92rem;cursor:pointer;padding:6px 12px;border-radius:99px;border:1px solid var(--line)}
+.back:hover{color:var(--accent);border-color:rgba(34,211,238,.5)}
+
+h2.section{font-size:1rem;margin:30px 0 12px;color:var(--accent);
+  letter-spacing:.09em;text-transform:uppercase;font-weight:700}
+
+/* ── Steps ── */
+.step{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;
+  margin-bottom:12px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  transition:border-color .2s}
+.step:hover{border-color:rgba(34,211,238,.4)}
+.step .head{display:flex;gap:13px;align-items:flex-start}
+.chk{flex:none;width:28px;height:28px;border-radius:9px;border:2px solid var(--muted);
+  background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:15px;color:transparent;margin-top:1px;transition:all .15s}
+.chk:hover{border-color:var(--accent)}
+.step.done .chk{background:linear-gradient(135deg,#34d399,#22d3ee);border-color:transparent;color:#06281c}
+.step.done .body{opacity:.55}
+.step h3{margin:0 0 5px;font-size:1.02rem}
+.step p{margin:0;color:var(--muted);font-size:.92rem;line-height:1.55}
+.wire{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.8rem;color:#a5f3fc;
+  background:rgba(9,15,29,.9);border:1px solid var(--line);border-radius:12px;
+  padding:12px 14px;margin:11px 0 0;white-space:pre;overflow-x:auto;line-height:1.6}
+.warn{background:rgba(251,191,36,.07);border:1px solid rgba(251,191,36,.35);border-radius:12px;
+  padding:13px 15px;margin-top:11px;font-size:.9rem;line-height:1.55}
+.warn b{color:var(--warn)}
+
+.parts{width:100%;border-collapse:collapse;font-size:.9rem}
+.parts th,.parts td{padding:9px 7px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.parts th{color:var(--muted);font-weight:600;font-size:.78rem;text-transform:uppercase;letter-spacing:.05em}
+.parts tr:hover td{background:rgba(34,211,238,.04)}
+
+.progress{position:sticky;top:0;padding:12px 0;z-index:5;
+  background:linear-gradient(#070d1a 82%, transparent)}
+.bar{height:9px;border-radius:99px;background:rgba(56,84,129,.3);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:99px;transition:width .35s;
+  background:linear-gradient(90deg,var(--accent),var(--accent2));
+  box-shadow:0 0 12px rgba(34,211,238,.6)}
+.ptext{font-size:.78rem;color:var(--muted);margin:7px 0 0}
+
+.hidden{display:none}
+footer{text-align:center;color:var(--muted);font-size:.8rem;padding:36px 16px 44px;line-height:1.8;
+  border-top:1px solid var(--line)}
+</style>
+</head>
+<body>
+
+<!-- ── Schematic traces: LEFT ── -->
+<div class="trace left" aria-hidden="true"><svg viewBox="0 0 170 900" preserveAspectRatio="none">
+  <g fill="none" stroke="#22d3ee" stroke-width="1.4" opacity=".5">
+    <path class="draw"    d="M10 40 H60 L95 75 H150"/>
+    <path class="draw d2" d="M15 200 H75 L110 235 V420 H160"/>
+    <path class="draw d3" d="M8 560 H55 L90 595 V760 H150"/>
+    <path class="draw d2" d="M20 830 H110 L140 860"/>
+  </g>
+  <g fill="none" stroke="#8b5cf6" stroke-width="1.2" opacity=".35">
+    <path class="draw d3" d="M40 130 H85 L115 160 V330 H150"/>
+    <path class="draw"   d="M30 640 H70 L100 670 V880 H140"/>
+  </g>
+  <g fill="#0b1220" stroke="#22d3ee" stroke-width="1.6">
+    <circle class="pulse" cx="150" cy="40" r="4.5"/><circle class="pulse d2" cx="160" cy="420" r="4.5"/>
+    <circle class="pulse d3" cx="150" cy="760" r="4.5"/><circle class="pulse d2" cx="55" cy="560" r="4"/>
+    <circle cx="150" cy="330" r="3.5" stroke="#8b5cf6"/><circle cx="140" cy="880" r="3.5" stroke="#8b5cf6"/>
+  </g>
+  <g fill="none" stroke="#22d3ee" stroke-width="1" opacity=".4">
+    <rect x="61" y="185" width="28" height="18" rx="2"/><rect x="86" y="585" width="28" height="18" rx="2"/>
+  </g>
+</svg></div>
+
+<!-- ── Schematic traces: RIGHT ── -->
+<div class="trace right" aria-hidden="true"><svg viewBox="0 0 170 900" preserveAspectRatio="none">
+  <g fill="none" stroke="#22d3ee" stroke-width="1.4" opacity=".5">
+    <path class="draw"    d="M160 90 H105 L70 125 H12"/>
+    <path class="draw d2" d="M155 300 H100 L65 335 V510 H15"/>
+    <path class="draw d3" d="M162 660 H112 L77 695 V845 H20"/>
+  </g>
+  <g fill="none" stroke="#8b5cf6" stroke-width="1.2" opacity=".35">
+    <path class="draw d2" d="M140 180 H95 L60 215 V390 H10"/>
+    <path class="draw"   d="M150 760 H90 L55 795 V880"/>
+  </g>
+  <g fill="#0b1220" stroke="#22d3ee" stroke-width="1.6">
+    <circle class="pulse d3" cx="12" cy="90" r="4.5"/><circle class="pulse" cx="15" cy="510" r="4.5"/>
+    <circle class="pulse d2" cx="20" cy="845" r="4.5"/><circle class="pulse" cx="112" cy="660" r="4"/>
+    <circle cx="10" cy="390" r="3.5" stroke="#8b5cf6"/><circle cx="55" cy="880" r="3.5" stroke="#8b5cf6"/>
+  </g>
+  <g fill="none" stroke="#22d3ee" stroke-width="1" opacity=".4">
+    <rect x="100" y="295" width="28" height="18" rx="2"/><rect x="77" cy="690" width="0" height="0"/><rect x="112" y="655" width="28" height="18" rx="2"/>
+  </g>
+</svg></div>
+
+<div class="wrap">
+<header>
+  <svg class="logo-badge" viewBox="0 0 100 100" aria-hidden="true">
+    <circle cx="50" cy="50" r="46" fill="#0b1220"/>
+    <path d="M62 20 A34 34 0 1 0 62 80" fill="none" stroke="#22d3ee" stroke-width="11" stroke-linecap="round"/>
+    <path d="M50 30 L62 45 L50 60 L62 75" fill="none" stroke="#22d3ee" stroke-width="8" stroke-linejoin="round" stroke-linecap="round"/>
+    <circle cx="66" cy="20" r="6" fill="#fbbf24"/>
+  </svg>
+  <h1>Circuit Sorcery</h1>
+  <div class="tagline">If it looks like magic, it's just physics you haven't learned yet. 🪄</div>
+</header>
+<main>
+
+<!-- HOME -->
+<div id="home">
+  <div class="guide" onclick="openGuide('car')" id="heroCard">
+    <h2>🚗 Self-Learning Robot Car</h2>
+    <p>Voice-controlled robot car that drives, maps your room, learns from its crashes, speaks its mind — and has an OLED face. ESP32-S3 brain, sonar senses, IMU compass, mic ears, speaker voice, camera eyes.</p>
+    <div class="meta">
+      <span class="badge accent">Series 1</span>
+      <span class="badge">⏱ a weekend or two</span>
+      <span class="badge">💰 ~110 €</span>
+      <span class="badge">🔧 soldering optional</span>
+    </div>
+  </div>
+  <p style="color:var(--muted);font-size:.9rem;text-align:center;margin-top:24px">More guides coming with every new build. Watch the videos, then build it yourself. ✨</p>
+</div>
+
+<!-- GUIDE: ROBOT CAR -->
+<div id="guide-car" class="hidden">
+  <span class="back" onclick="openHome()">← All guides</span>
+  <h2 class="section">⚙️ The build</h2>
+  <div class="progress"><div class="bar"><i id="bar-car"></i></div><p class="ptext" id="ptext-car"></p></div>
+  <div id="steps-car"></div>
+
+  <h2 class="section">🧰 Parts list (~110 €)</h2>
+  <table class="parts">
+    <tr><th>Part</th><th>Qty</th><th>Notes</th></tr>
+    <tr><td>ESP32-S3 DevKitC-1 N16R8</td><td>1</td><td>the brain — 16 MB flash, 8 MB PSRAM</td></tr>
+    <tr><td>ESP32-CAM + MB base (OV2640)</td><td>1</td><td>the eyes</td></tr>
+    <tr><td>L298N motor driver</td><td>1</td><td>drives 2 TT motors</td></tr>
+    <tr><td>TT gear motors 3–6 V</td><td>2</td><td>1:48 ratio, + 65 mm wheels</td></tr>
+    <tr><td>HC-SR04 sonar</td><td>3</td><td>front, left, right</td></tr>
+    <tr><td>MPU-6050 IMU</td><td>1</td><td>compass + odometry, I²C</td></tr>
+    <tr><td>INMP441 mic (I²S)</td><td>1</td><td>the ears</td></tr>
+    <tr><td>DFPlayer Mini + 3 W speaker</td><td>1+1</td><td>the voice, microSD inside</td></tr>
+    <tr><td>SSD1306 OLED 0.96" I²C</td><td>1</td><td>the face (4-pin version)</td></tr>
+    <tr><td>MG996R servo</td><td>1</td><td>front-wheel steering</td></tr>
+    <tr><td>Resistors: 1 kΩ, 2 kΩ</td><td>several</td><td>5 V protection — see caveats</td></tr>
+    <tr><td>Capacitor 470–1000 µF</td><td>1</td><td>power smoothing</td></tr>
+    <tr><td>6×AA battery holder</td><td>1</td><td>7.2 V pack powers everything</td></tr>
+    <tr><td>Chassis board + caster wheel</td><td>1</td><td>MDF/plastic ~20×15 cm</td></tr>
+    <tr><td>Jumper wires F-F, microSD card</td><td>~30 + 1</td><td>check your Arduino kit first</td></tr>
+  </table>
+
+  <h2 class="section">⚠️ Gotchas (read these twice)</h2>
+  <div id="warns-car"></div>
+
+  <h2 class="section">🔌 Master wiring</h2>
+  <div class="wire">ESP32-S3 GPIO map (23 of ~30 used)
+ IN1  GPIO 11 │ L298N A   │  Sonar-F  GPIO 13/12*
+ IN2  GPIO 10 │ L298N B   │  Sonar-L  GPIO 14/27*
+ IN3  GPIO  9 │ L298N A   │  Sonar-R  GPIO 25/26*
+ IN4  GPIO  8 │ L298N B   │  *Echo via 1k/2k divider!
+ ENA/ENB = PWM GPIO 3/4   │  I²C bus  GPIO 17 SDA / 18 SCL
+ Servo  GPIO  5 (PWM)     │   → MPU-6050 (0x68) + OLED (0x3C)
+ Mic INMP441: SCK 15, WS 16, SD 21  │  Buzzer GPIO 7
+ DFPlayer: TX 41 → RX 42, RX ← TX 40 (1kΩ each)
+ ESP32-CAM: TX 19 ⇄ RX 20 (1kΩ each), power from 5V rail
+
+Power: 6×AA (7.2V) → L298N → 5V rail → S3, CAM, DFPlayer, servo
+      ALL GROUNDS COMMON (battery−, L298N, S3, CAM, DFPlayer)</div>
+</div>
+
+</main>
+<footer>
+  Circuit Sorcery — real electronics, no magic secrets.<br>
+  Free companion app for the <a href="https://youtube.com/" rel="noopener">YouTube channel</a>. Built with an AI co-engineer. ⚡
+</footer>
+</div>
+
+<script>
+const GUIDES = {
+  car: {
+    steps: [
+      {t:"Test the brain", d:"Flash a blink sketch to the ESP32-S3 first. If it blinks — the brain is alive and Arduino IDE + ESP32 boards are installed. Use the USB-C UART/COM port; if upload fails, hold BOOT while plugging in.",
+       w:"If the port doesn't appear at all, install the CP210x/CH34x driver from the Espressif docs."},
+      {t:"Wire the motor driver + motors", d:"L298N inputs to GPIO 11/10/9/8, PWM to 3/4, motors to both A/B outputs. Battery pack 7.2 V to L298N power input. Its 5 V jumper ON.",
+       w:"Never feed 7.2 V to any logic board — only the L298N input."},
+      {t:"Mount chassis + steering servo", d:"TT motors rear, MG996R steering servo front (horn centered at 90° BEFORE powering), caster wheel back. Attach the S3 on top with standoffs or double tape.",
+       w:"Mount the servo horn centered so steering trim isn't a nightmare."},
+      {t:"Add the senses — 3 sonars", d:"Front/left/right HC-SR04. Trigger pin direct, Echo pin through a 1k/2k voltage divider to GPIO. 5 V power.",
+       w:"Sonar Echo outputs 5 V — divider is mandatory, never wire Echo straight to the S3!"},
+      {t:"Add the compass — MPU-6050", d:"Wire to the I²C bus: GPIO 17 SDA, GPIO 18 SCL, 3.3 V, GND. Keep the car perfectly still for 2 seconds after power-on — it calibrates.",
+       wire:"S3 GPIO17 → IMU SDA    S3 GPIO18 → IMU SCL\n3V3 → VCC    GND → GND"},
+      {t:"Give it a voice — DFPlayer + speaker", d:"microSD FAT32 with 0001-0009 Latvian phrases + 0021-0026 sound effects (WAV). Serial link through 1 kΩ resistors on both data lines. Speaker to SPK1.",
+       w:"SD must be FAT32; files must be named exactly 0001.mp3 … or the player won't find them."},
+      {t:"Give it ears — INMP441 mic", d:"I²S microphone: SCK 15, WS 16, SD 21, 3.3 V, GND. Point it forward.",
+       w:"Long I²S wires cause noise — keep them under 10 cm where possible."},
+      {t:"Give it a face — SSD1306 OLED", d:"The I²C bus has free seats: tap SDA/SCL/3V3/GND alongside the IMU — parallel connection, no new pins used. Address 0x3C, no conflict with IMU 0x68.",
+       wire:"S3 GPIO17 ─┬─ IMU SDA ── OLED SDA\nS3 GPIO18 ─┬─ IMU SCL ── OLED SCL\n3V3 ────────┬─ IMU VCC ── OLED VCC\nGND ────────┴─ IMU GND ── OLED GND"},
+      {t:"Give it eyes — ESP32-CAM", d:"Camera ribbon stays on its own board. Only 4 wires to the S3: serial TX/RX through 1 kΩ resistors + 5 V + GND from the L298N rail. Flash it as a separate board (AI Thinker ESP32-CAM).",
+       w:"The CAM reboots if 5 V is weak — the big capacitor on the rail fixes it."},
+      {t:"Flash the main firmware", d:"Upload the Circuit Sorcery robot car sketch to the S3 (ESP32S3 Dev Module). Serial console at 115200: 's' = explore, 'm' = map, 'q' = Q-table, 'r' = reset brain.",
+       w:"Start PWM at 120 (code default) and raise gradually. If wheels slip — lower it."},
+      {t:"Final power-up ritual", d:"One last check before the magic: ALL grounds common, capacitor across 5 V, servo horn centered, car on blocks (wheels off ground) for the first test. Then: avāks! 🚗💨"}
+    ],
+    warns: [
+      {w:"<b>5 V kills GPIOs:</b> sonar Echo pins MUST go through the 1k/2k divider; DFPlayer &amp; CAM serial lines get a 1 kΩ each. Direct = dead pin."},
+      {w:"<b>One ground to rule them all:</b> battery−, L298N, S3, CAM, DFPlayer all share GND. The #1 beginner bug."},
+      {w:"<b>Power chain is strict:</b> 7.2 V only into L298N input. Everything else eats its 5 V output. 5 V jumper ON."},
+      {w:"<b>IMU calibration:</b> car must be perfectly still ~2 s at boot — don't touch it while it 'meditates'."},
+      {w:"<b>Servo &amp; CAM power spikes:</b> the 470–1000 µF capacitor on the 5 V rail is not optional. If the CAM still reboots, upgrade to a 5 V UBEC."},
+      {w:"<b>Upload port:</b> use the UART/COM USB-C port on the S3 (not the OTG one). Hold BOOT while plugging in if upload fails."},
+      {w:"<b>Steering center:</b> mount the servo horn at 90° before powering up, or calibrate forever after."},
+      {w:"<b>Motor PWM:</b> start at 120 (default), raise gradually. Don't chase max speed — traction &gt; speed."},
+      {w:"<b>Flash before wiring extras:</b> blink test first, wire one subsystem at a time, test, next. Never wire everything and pray."}
+    ]
+  }
+};
+
+function openGuide(id){ document.getElementById('home').classList.add('hidden');
+  document.getElementById('guide-'+id).classList.remove('hidden'); window.scrollTo(0,0); render(id);}
+function openHome(){ document.querySelectorAll('[id^=guide-]').forEach(el=>el.classList.add('hidden'));
+  document.getElementById('home').classList.remove('hidden'); window.scrollTo(0,0);}
+
+function state(id){ try{return JSON.parse(localStorage.getItem('cs-'+id)||'[]')}catch(e){return[]} }
+function save(id,s){ localStorage.setItem('cs-'+id, JSON.stringify(s)); }
+
+function render(id){
+  const g = GUIDES[id], s = state(id), wrap = document.getElementById('steps-'+id);
+  wrap.innerHTML='';
+  g.steps.forEach((st,i)=>{
+    const el=document.createElement('div'); el.className='step'+(s[i]?' done':'');
+    el.innerHTML=`<div class="head"><button class="chk" aria-label="done">✓</button>
+      <div class="body"><h3>${i+1}. ${st.t}</h3><p>${st.d}</p>
+      ${st.wire?`<div class="wire">${st.wire.replace(/</g,'&lt;')}</div>`:''}
+      ${st.w?`<div class="warn">⚠️ <b>${st.w.replace(/^<b>|<\/b>$/g,'')}</b></div>`:''}</div></div>`;
+    el.querySelector('.chk').onclick=()=>{ s[i]=!s[i]; save(id,s); render(id); };
+    wrap.appendChild(el);
+  });
+  const done=s.filter(Boolean).length, pct=Math.round(done/g.steps.length*100);
+  document.getElementById('bar-'+id).style.width=pct+'%';
+  document.getElementById('ptext-'+id).textContent=`${done}/${g.steps.length} steps done (${pct}%) — progress saves on this device`;
+  const wwrap=document.getElementById('warns-'+id); wwrap.innerHTML='';
+  g.warns.forEach(x=>{ const d=document.createElement('div'); d.className='warn'; d.innerHTML=x.w; wwrap.appendChild(d); });
+}
+
+/* cursor glow on the hero card */
+const hero=document.getElementById('heroCard');
+if(hero){ hero.addEventListener('pointermove', e=>{
+  const r=hero.getBoundingClientRect();
+  hero.style.setProperty('--mx', ((e.clientX-r.left)/r.width*100)+'%');
+  hero.style.setProperty('--my', ((e.clientY-r.top)/r.height*100)+'%');
+});}
+
+if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catch(()=>{}); }
+</script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" nonce="BL7lGg9cBoh/Qb3V0WIk+w==" data-cf-beacon='{"version":"2024.11.0","token":"36b4216ae2dc4d5488c249161e71fe1e","spa":2}' crossorigin="anonymous"></script>
+</body>
+</html>
